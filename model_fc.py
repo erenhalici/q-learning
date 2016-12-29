@@ -2,12 +2,14 @@
 import tensorflow as tf
 
 class Model(object):
-  def __init__(self, num_inputs, num_outputs, fc_sizes=[5, 5], gamma=0.995, learning_rate=1e-5):
+  def __init__(self, num_inputs, num_outputs, fc_sizes=[256], gamma=0.9, learning_rate=1e-6):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, num_inputs])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, num_inputs])
     r  = self._r  = tf.placeholder(tf.float32, [None])
     f  = self._f  = tf.placeholder(tf.float32, [None])
     a  = self._a  = tf.placeholder(tf.int32, [None, 2])
+
+    batch_size = tf.shape(x0)[0]
 
     weights = []
     last_size = num_inputs
@@ -21,13 +23,19 @@ class Model(object):
 
     self._action = tf.argmax(q0, 1)
 
-    y = r + f * gamma * tf.reduce_max(q1, axis=1)
+    # y_ = r + f * gamma * tf.reduce_max(q1, axis=1)
+    self._temp1 = y = tf.Variable(tf.zeros([512]), trainable=False, validate_shape=False)
+    assign = y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
+    # self._temp1 = y = tf.Variable(r + f * gamma * tf.reduce_max(q1, axis=1), trainable=False, validate_shape=False)
+    # y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
+    # y = tf.Variable(r + f * gamma * tf.reduce_max(q1, axis=1), trainable=False, validate_shape=False)
+    # y = Variable()
     x = tf.gather_nd(q0, a)
 
-    error = tf.square(x - y)
+    error = tf.reduce_mean(tf.square(x - y))
     # error = -x * tf.log(y)
-
-    self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    self._step = tf.group(assign, optimize)
     # self._step = tf.train.AdamOptimizer(learning_rate, epsilon=0.1).minimize(error)
     # self._step = tf.train.GradientDescentOptimizer(learning_rate).minimize(error)
 
@@ -50,6 +58,9 @@ class Model(object):
     # initial = tf.random_uniform(shape, -1, 1)
     return tf.Variable(initial)
 
+  @property
+  def temp1(self):
+    return self._temp1
   @property
   def x0(self):
     return self._x0

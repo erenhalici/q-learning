@@ -5,7 +5,7 @@ import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.99999):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.01, epsilon_decay=0.99999):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
     self._model = Model(num_inputs, num_outputs)
@@ -41,13 +41,13 @@ class Learner(object):
       self._experiences.pop(0)
 
   def step_with(self, experiences):
-    if (len(experiences) > self._batch_size):
+    if (len(experiences) >= self._batch_size):
       self.train_with(random.sample(experiences, self._batch_size))
-    else:
-      self.train_with(experiences)
+    # else:
+    #   self.train_with(experiences)
 
   def step(self):
-    if (len(self._experiences) > self._batch_size):
+    if (len(self._experiences) >= self._batch_size):
       self.train_with(random.sample(self._experiences, self._batch_size))
 
   def train_with(self, experiences):
@@ -79,7 +79,7 @@ class Learner(object):
     if self._epsilon < self._min_epsilon:
       self._epsilon = self._min_epsilon
 
-
+    # print self._sess.run(m.temp1, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
   def save_model(self):
     self._saver.save(self._sess, "model.ckpt")
 
