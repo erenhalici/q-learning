@@ -47,8 +47,8 @@ for i_episode in range(200000):
     print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
 
   for t in range(1000):
-    if show:
-      env.render()
+    # if show:
+    #   env.render()
 
     # action, q_max, q_min = learner.action(np.concatenate((observation, last_observation)), best=show)
     action, q = learner.action(observation, best=show)
