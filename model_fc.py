@@ -2,7 +2,7 @@
 import tensorflow as tf
 
 class Model(object):
-  def __init__(self, num_inputs, num_outputs, fc_sizes=[5, 5], gamma=0.995, batch_size=64, learning_rate=1e-3):
+  def __init__(self, num_inputs, num_outputs, fc_sizes=[3, 3], gamma=0.995, batch_size=64, learning_rate=1e-2):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, num_inputs])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, num_inputs])
     r  = self._r  = tf.placeholder(tf.float32, [None])
