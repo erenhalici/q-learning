@@ -8,7 +8,7 @@ class Learner(object):
   def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.01, epsilon_decay=0.99999):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
-    self._model = Model(num_inputs, num_outputs)
+    self._model = Model(num_inputs, num_outputs, batch_size=batch_size)
     self._batch_size = batch_size
 
     self._saver = tf.train.Saver()
@@ -26,13 +26,15 @@ class Learner(object):
 
 
   def action(self, observation, best=False):
-    if best==False and random.random() < self._min_epsilon:
+    if best==False and random.random() < self._epsilon:
+      # print 'random choice'
       return random.randrange(self._num_outputs), []
 
     model = self._model
     # return self._sess.run(model.action, feed_dict={model.x0: [observation]})[0]
     q0 = self._sess.run(model.q0, feed_dict={model.x0: [observation]})[0]
     action = np.argmax(q0)
+    # print action, q0
     return action, q0
 
   def add_experience(self, e):
@@ -72,6 +74,7 @@ class Learner(object):
         f.append(0)
       else:
         f.append(1)
+      count += 1
 
     self._sess.run(m.step, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
 

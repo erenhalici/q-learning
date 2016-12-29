@@ -2,14 +2,12 @@
 import tensorflow as tf
 
 class Model(object):
-  def __init__(self, num_inputs, num_outputs, fc_sizes=[256], gamma=0.9, learning_rate=1e-6):
+  def __init__(self, num_inputs, num_outputs, fc_sizes=[5, 5], gamma=0.995, batch_size=64, learning_rate=1e-3):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, num_inputs])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, num_inputs])
     r  = self._r  = tf.placeholder(tf.float32, [None])
     f  = self._f  = tf.placeholder(tf.float32, [None])
     a  = self._a  = tf.placeholder(tf.int32, [None, 2])
-
-    batch_size = tf.shape(x0)[0]
 
     weights = []
     last_size = num_inputs
@@ -24,7 +22,7 @@ class Model(object):
     self._action = tf.argmax(q0, 1)
 
     # y_ = r + f * gamma * tf.reduce_max(q1, axis=1)
-    self._temp1 = y = tf.Variable(tf.zeros([512]), trainable=False, validate_shape=False)
+    self._temp1 = y = tf.Variable(tf.zeros([batch_size]), trainable=False, validate_shape=False)
     assign = y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
     # self._temp1 = y = tf.Variable(r + f * gamma * tf.reduce_max(q1, axis=1), trainable=False, validate_shape=False)
     # y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
@@ -33,6 +31,13 @@ class Model(object):
     x = tf.gather_nd(q0, a)
 
     error = tf.reduce_mean(tf.square(x - y))
+    # temp1 = tf.Variable(tf.zeros([batch_size, num_outputs]), trainable=False, validate_shape=False)
+    # temp2 = tf.reshape(tf.scatter_update(tf.reshape(q0, [-1]), a + range(batch_size)*num_outputs, r + f * gamma * tf.reduce_max(q1, axis=1)), [batch_size, num_outputs])
+    # y     = temp1.assign(temp2)
+
+    # error = tf.reduce_mean(tf.square(q0 - y))
+
+
     # error = -x * tf.log(y)
     optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
     self._step = tf.group(assign, optimize)

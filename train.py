@@ -38,7 +38,7 @@ for i_episode in range(200000):
 
   total_reward = 0
 
-  if i_episode % 100 == 0:
+  if i_episode % 50 == 0:
     show = True
   else:
     show = False
@@ -46,9 +46,9 @@ for i_episode in range(200000):
   if show:
     print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
 
-  for t in range(1000):
-    # if show:
-    #   env.render()
+  for t in range(200):
+    if show:
+      env.render()
 
     # action, q_max, q_min = learner.action(np.concatenate((observation, last_observation)), best=show)
     action, q = learner.action(observation, best=show)
@@ -60,8 +60,8 @@ for i_episode in range(200000):
 
       q_max = max(q)
       q_min = min(q)
-      q_max_avg = 0.99 * q_max_avg + 0.01 * q_max
-      q_min_avg = 0.99 * q_min_avg + 0.01 * q_min
+      q_max_avg = 0.9 * q_max_avg + 0.1 * q_max
+      q_min_avg = 0.9 * q_min_avg + 0.1 * q_min
 
     observation, reward, done, info = env.step(action)
     # if action == 0:
@@ -85,31 +85,31 @@ for i_episode in range(200000):
     if done:
       print("Episode {0:05d} finished after {1:04d} timesteps. Total Reward: {2:6.2f} (avg. q_max: {3:.2f}, q_min: {4:.2f}) Epoch: {5:.2f}".format(i_episode, t+1, total_reward, q_max_avg, q_min_avg, count/50000.0))
 
-      # max_experiences.append((episode_experiences, total_reward))
+      max_experiences.append((episode_experiences, total_reward))
 
-      # if len(max_experiences) > batch_size:
-      #   min_reward = total_reward
+      if len(max_experiences) > batch_size:
+        min_reward = total_reward
 
-      #   for i in range(len(max_experiences)):
-      #     (_, r) = max_experiences[i]
-      #     if r <= min_reward:
-      #       min_reward = r
-      #       min_index = i
+        for i in range(len(max_experiences)):
+          (_, r) = max_experiences[i]
+          if r <= min_reward:
+            min_reward = r
+            min_index = i
 
-      #   if min_reward != total_reward:
-      #     print("Eliminated run with reward: {}".format(min_reward))
+        if min_reward != total_reward:
+          print("Eliminated run with reward: {}".format(min_reward))
 
-      #   max_experiences.pop(min_index)
+        max_experiences.pop(min_index)
 
-      # end_experiences.append(e)
-      # if (len(end_experiences) > len(max_experiences)):
-      #   end_experiences.pop(0)
+      end_experiences.append(e)
+      if (len(end_experiences) > len(max_experiences)):
+        end_experiences.pop(0)
 
-      # ll = [item for (exps, r) in max_experiences for item in exps]
+      ll = [item for (exps, r) in max_experiences for item in exps]
 
-      # for _ in range(10):
-      #   learner.step_with(ll)
-      #   learner.step_with(end_experiences)
+      for _ in range(10):
+        learner.step_with(ll)
+        learner.step_with(end_experiences)
 
       break
 
