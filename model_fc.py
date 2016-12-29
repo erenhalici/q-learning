@@ -2,7 +2,7 @@
 import tensorflow as tf
 
 class Model(object):
-  def __init__(self, num_inputs, num_outputs, fc_sizes=[5, 5], gamma=0.7, learning_rate=1e-4):
+  def __init__(self, num_inputs, num_outputs, fc_sizes=[5, 5], gamma=0.995, learning_rate=1e-5):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, num_inputs])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, num_inputs])
     r  = self._r  = tf.placeholder(tf.float32, [None])
@@ -25,23 +25,29 @@ class Model(object):
     x = tf.gather_nd(q0, a)
 
     error = tf.square(x - y)
+    # error = -x * tf.log(y)
 
     self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    # self._step = tf.train.AdamOptimizer(learning_rate, epsilon=0.1).minimize(error)
+    # self._step = tf.train.GradientDescentOptimizer(learning_rate).minimize(error)
 
   def q_value(self, x, weights):
     h = x
 
     for (W, b) in weights:
       h = tf.nn.relu(tf.matmul(h, W) + b)
+      # h = tf.nn.sigmoid(tf.matmul(h, W) + b)
 
     return h
 
   def weight_variable(self, shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
+    # initial = tf.random_uniform(shape, -1, 1)
     return tf.Variable(initial)
 
   def bias_variable(self, shape):
     initial = tf.constant(0.1, shape=shape)
+    # initial = tf.random_uniform(shape, -1, 1)
     return tf.Variable(initial)
 
   @property

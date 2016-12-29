@@ -5,13 +5,17 @@ import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=300000, min_epsilon=0.05, epsilon_decay=0.99999):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.99999):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
     self._model = Model(num_inputs, num_outputs)
     self._batch_size = batch_size
+
+    self._saver = tf.train.Saver()
+
     self._sess  = tf.Session()
     self._sess.run(tf.global_variables_initializer())
+
     self._experiences = []
     self._exp_size = exp_size
 
@@ -19,18 +23,17 @@ class Learner(object):
     self._min_epsilon = min_epsilon
     self._epsilon_decay = epsilon_decay
 
+
+
   def action(self, observation, best=False):
     if best==False and random.random() < self._min_epsilon:
-      return random.randrange(self._num_outputs), 0, 0
+      return random.randrange(self._num_outputs), []
 
     model = self._model
     # return self._sess.run(model.action, feed_dict={model.x0: [observation]})[0]
     q0 = self._sess.run(model.q0, feed_dict={model.x0: [observation]})[0]
     action = np.argmax(q0)
-    q_max = q0[action]
-    q_min = min(q0)
-    return action, q_max, q_min
-
+    return action, q0
 
   def add_experience(self, e):
     self._experiences.append(e)
@@ -76,6 +79,9 @@ class Learner(object):
     if self._epsilon < self._min_epsilon:
       self._epsilon = self._min_epsilon
 
+
+  def save_model(self):
+    self._saver.save(self._sess, "model.ckpt")
 
   @property
   def epsilon(self):
