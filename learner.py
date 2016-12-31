@@ -5,7 +5,7 @@ import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.01, epsilon_decay=0.99999):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
     self._model = Model(num_inputs, num_outputs, batch_size=batch_size)
@@ -22,8 +22,6 @@ class Learner(object):
     self._epsilon = 1.0
     self._min_epsilon = min_epsilon
     self._epsilon_decay = epsilon_decay
-
-
 
   def action(self, observation, best=False):
     if best==False and random.random() < self._epsilon:
@@ -85,6 +83,10 @@ class Learner(object):
     # print self._sess.run(m.temp1, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
   def save_model(self):
     self._saver.save(self._sess, "model.ckpt")
+
+  def load_model(self):
+    self._saver.restore(self._sess, "./yedek2/model.ckpt")
+
 
   @property
   def epsilon(self):
