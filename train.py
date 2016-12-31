@@ -38,25 +38,27 @@ for i_episode in range(200000):
 
   total_reward = 0
 
-  if i_episode % 50 == 0:
-    show = True
-  else:
-    show = False
+  # if i_episode % 50 == 0:
+  #   show = True
+  # else:
+  #   show = False
+  show = True
 
-  if show:
-    print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
+  # if show:
+  #   print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
 
-  for t in range(1000):
+  for t in range(999):
     if show:
       env.render()
 
     # action, q_max, q_min = learner.action(np.concatenate((observation, last_observation)), best=show)
-    action, q = learner.action(observation, best=show)
+    # action, q = learner.action(observation, best=show)
     # action, q = learner.action(observation, best=True)
+    action, q = learner.action(observation)
 
     if len(q) > 0:
-      if show:
-        print action, q[0], q[1]
+      # if show:
+      #   print action, q[0], q[1]
 
       q_max = max(q)
       q_min = min(q)
@@ -85,7 +87,7 @@ for i_episode in range(200000):
     if done:
       break
 
-  print("Episode {0:05d} finished after {1:04d} timesteps. Total Reward: {2:6.2f} (avg. q_max: {3:.2f}, q_min: {4:.2f}) Epoch: {5:.2f}".format(i_episode, t+1, total_reward, q_max_avg, q_min_avg, count/50000.0))
+  print("Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.0f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f}".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0))
 
   # max_experiences.append((episode_experiences, total_reward))
 
