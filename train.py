@@ -50,8 +50,8 @@ for i_episode in range(total_episodes):
 
       q_max = max(q)
       q_min = min(q)
-      q_max_avg = 0.9 * q_max_avg + 0.1 * q_max
-      q_min_avg = 0.9 * q_min_avg + 0.1 * q_min
+      q_max_avg = 0.99 * q_max_avg + 0.01 * q_max
+      q_min_avg = 0.99 * q_min_avg + 0.01 * q_min
 
     observation, reward, done, info = env.step(action)
     total_reward += reward
