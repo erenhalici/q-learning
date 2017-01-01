@@ -21,46 +21,34 @@ class Model(object):
 
     self._action = tf.argmax(q0, 1)
 
-    # y_ = r + f * gamma * tf.reduce_max(q1, axis=1)
-    self._temp1 = y = tf.Variable(tf.zeros([batch_size]), trainable=False, validate_shape=False)
-    assign = y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
-    # self._temp1 = y = tf.Variable(r + f * gamma * tf.reduce_max(q1, axis=1), trainable=False, validate_shape=False)
-    # y.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
-    # y = tf.Variable(r + f * gamma * tf.reduce_max(q1, axis=1), trainable=False, validate_shape=False)
-    # y = Variable()
-    x = tf.gather_nd(q0, a)
-
-    error = tf.reduce_mean(tf.square(x - y))
     # temp1 = tf.Variable(tf.zeros([batch_size, num_outputs]), trainable=False, validate_shape=False)
     # temp2 = tf.reshape(tf.scatter_update(tf.reshape(q0, [-1]), a + range(batch_size)*num_outputs, r + f * gamma * tf.reduce_max(q1, axis=1)), [batch_size, num_outputs])
     # y     = temp1.assign(temp2)
-
     # error = tf.reduce_mean(tf.square(q0 - y))
 
-
     # error = -x * tf.log(y)
-    optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
-    self._step = tf.group(assign, optimize)
-    # self._step = tf.train.AdamOptimizer(learning_rate, epsilon=0.1).minimize(error)
-    # self._step = tf.train.GradientDescentOptimizer(learning_rate).minimize(error)
+
+    temp1 = tf.Variable(tf.zeros([batch_size]), trainable=False, validate_shape=False)
+    y = temp1.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
+    x = tf.gather_nd(q0, a)
+    error = tf.reduce_mean(tf.square(x - y))
+    # error = -x * tf.log(y)
+    self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
 
   def q_value(self, x, weights):
     h = x
 
     for (W, b) in weights:
       h = tf.nn.relu(tf.matmul(h, W) + b)
-      # h = tf.nn.sigmoid(tf.matmul(h, W) + b)
 
     return h
 
   def weight_variable(self, shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
-    # initial = tf.random_uniform(shape, -1, 1)
     return tf.Variable(initial)
 
   def bias_variable(self, shape):
     initial = tf.constant(0.1, shape=shape)
-    # initial = tf.random_uniform(shape, -1, 1)
     return tf.Variable(initial)
 
   @property

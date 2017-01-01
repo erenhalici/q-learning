@@ -3,57 +3,45 @@ from learner import Learner
 import gym
 import numpy as np
 
-temporal_window = 1
 batch_size = 512
+total_episodes = 1000
+steps_per_episode = 1000
+env_name = 'CartPole-v0'
 
-# env = gym.make('SpaceInvadersDeterministic-v3')
-env = gym.make('CartPole-v0')
+env = gym.make(env_name)
 
-print(env.action_space)
-print(env.observation_space)
-
-num_inputs  = 4 * temporal_window
-num_outputs = 2
+num_inputs  = env.observation_space.shape[0]
+num_outputs = env.action_space.n
 
 learner = Learner(num_inputs, num_outputs, batch_size=batch_size)
-
 
 q_max_avg = 0
 q_min_avg = 0
 
-max_experiences = []
-min_experiences = []
-end_experiences = []
-
 count = 0
-for i_episode in range(200000):
+for i_episode in range(total_episodes):
 
-  if i_episode % 1000 == 0:
-    learner.save_model()
+  # if i_episode % 1000 == 0:
+  #   learner.save_model()
 
   episode_experiences = []
 
   last_observation = observation = env.reset()
-  # last_observation2 = None
 
   total_reward = 0
 
-  # if i_episode % 50 == 0:
-  #   show = True
-  # else:
-  #   show = False
-  show = True
+  if i_episode % 1 == 0:
+    show = True
+  else:
+    show = False
 
   # if show:
   #   print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
 
-  for t in range(999):
+  for t in range(steps_per_episode):
     if show:
       env.render()
 
-    # action, q_max, q_min = learner.action(np.concatenate((observation, last_observation)), best=show)
-    # action, q = learner.action(observation, best=show)
-    # action, q = learner.action(observation, best=True)
     action, q = learner.action(observation)
 
     if len(q) > 0:
@@ -66,20 +54,13 @@ for i_episode in range(200000):
       q_min_avg = 0.9 * q_min_avg + 0.1 * q_min
 
     observation, reward, done, info = env.step(action)
-    # if action == 0:
-    #   reward = 0
-    # else:
-    #   reward = 10
     total_reward += reward
 
-    # if last_observation2 != None:
-      # e = ((np.concatenate((last_observation, last_observation2)), action, reward, np.concatenate((observation, last_observation)), done))
     e = (last_observation, action, reward, observation, done)
     episode_experiences.append(e)
     learner.add_experience(e)
     learner.step()
 
-    # last_observation2 = last_observation
     last_observation = observation
 
     count += 1
@@ -88,29 +69,3 @@ for i_episode in range(200000):
       break
 
   print("Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.0f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f}".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0))
-
-  # max_experiences.append((episode_experiences, total_reward))
-
-  # if len(max_experiences) > batch_size:
-  #   min_reward = total_reward
-
-  #   for i in range(len(max_experiences)):
-  #     (_, r) = max_experiences[i]
-  #     if r <= min_reward:
-  #       min_reward = r
-  #       min_index = i
-
-  #   if min_reward != total_reward:
-  #     print("Eliminated run with reward: {}".format(min_reward))
-
-  #   max_experiences.pop(min_index)
-
-  # end_experiences.append(e)
-  # if (len(end_experiences) > len(max_experiences)):
-  #   end_experiences.pop(0)
-
-  # ll = [item for (exps, r) in max_experiences for item in exps]
-
-  # for _ in range(10):
-  #   learner.step_with(ll)
-  #   learner.step_with(end_experiences)

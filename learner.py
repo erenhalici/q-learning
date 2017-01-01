@@ -25,14 +25,12 @@ class Learner(object):
 
   def action(self, observation, best=False):
     if best==False and random.random() < self._epsilon:
-      # print 'random choice'
       return random.randrange(self._num_outputs), []
 
     model = self._model
     # return self._sess.run(model.action, feed_dict={model.x0: [observation]})[0]
     q0 = self._sess.run(model.q0, feed_dict={model.x0: [observation]})[0]
     action = np.argmax(q0)
-    # print action, q0
     return action, q0
 
   def add_experience(self, e):
@@ -43,8 +41,6 @@ class Learner(object):
   def step_with(self, experiences):
     if (len(experiences) >= self._batch_size):
       self.train_with(random.sample(experiences, self._batch_size))
-    # else:
-    #   self.train_with(experiences)
 
   def step(self):
     if (len(self._experiences) >= self._batch_size):
@@ -79,14 +75,11 @@ class Learner(object):
     self._epsilon = self._epsilon * self._epsilon_decay
     if self._epsilon < self._min_epsilon:
       self._epsilon = self._min_epsilon
+  def save_model(self, model_file):
+    self._saver.save(self._sess, model_file)
 
-    # print self._sess.run(m.temp1, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
-  def save_model(self):
-    self._saver.save(self._sess, "model.ckpt")
-
-  def load_model(self):
-    self._saver.restore(self._sess, "./yedek2/model.ckpt")
-
+  def load_model(self, model_file):
+    self._saver.restore(self._sess, model_file)
 
   @property
   def epsilon(self):
