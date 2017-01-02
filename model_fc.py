@@ -24,7 +24,7 @@ class Model(object):
     temp1 = tf.Variable(tf.zeros([batch_size * num_outputs]), trainable=False, validate_shape=False)
     q0_flat = temp1.assign(tf.reshape(q0, [-1]))
     temp2 = tf.Variable(tf.zeros([batch_size * num_outputs]), trainable=False, validate_shape=False)
-    y_flat = temp2.assign(tf.scatter_update(q0_flat, a + range(0, batch_size*num_outputs, 2), r + f * gamma * tf.reduce_max(q1, axis=1)))
+    y_flat = temp2.assign(tf.scatter_update(q0_flat, a + range(0, batch_size*num_outputs, num_outputs), r + f * gamma * tf.reduce_max(q1, axis=1)))
     y = tf.reshape(y_flat, [batch_size, num_outputs])
     error = tf.reduce_mean(tf.square(q0 - y))
 
