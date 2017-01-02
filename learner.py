@@ -5,11 +5,12 @@ import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
-    self._model = Model(num_inputs, num_outputs, batch_size=batch_size)
     self._batch_size = batch_size
+    self.learning_rate = learning_rate
+    self._model = Model(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
     self._saver = tf.train.Saver()
 
@@ -82,3 +83,6 @@ class Learner(object):
   @property
   def epsilon(self):
     return self._epsilon
+  @epsilon.setter
+  def epsilon(self, epsilon):
+    self._epsilon = epsilon
