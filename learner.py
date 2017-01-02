@@ -1,16 +1,22 @@
 
-from model_fc import Model
+from model_fc  import ModelFC
+from model_cnn import ModelCNN
 import tensorflow as tf
 import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
-    self._num_inputs  = num_inputs
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9999, learning_rate=1e-4):
+    # self._num_inputs  = num_inputs
+    self._width = width
+    self._height = height
+    self._channels = channels
     self._num_outputs = num_outputs
     self._batch_size = batch_size
-    self.learning_rate = learning_rate
-    self._model = Model(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+    self._learning_rate = learning_rate
+
+    # self._model = ModelFC(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+    self._model = ModelCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
     self._saver = tf.train.Saver()
 

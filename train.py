@@ -3,20 +3,29 @@ from learner import Learner
 import gym
 import numpy as np
 
-batch_size = 512
+# batch_size = 512
+batch_size = 16
 total_episodes = 1000
 steps_per_episode = 1000
 learning_rate = 1e-3
-env_name = 'CartPole-v0'
+
+# env_name = 'CartPole-v0'
+env_name = 'Breakout-v0'
 
 learning_count = 5
 
 env = gym.make(env_name)
 
-num_inputs  = env.observation_space.shape[0]
+print env.observation_space
+print env.action_space
+
+# num_inputs  = env.observation_space.shape[0]
+width = env.observation_space.shape[0]
+height = env.observation_space.shape[1]
+channels = env.observation_space.shape[2]
 num_outputs = env.action_space.n
 
-learner = Learner(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+learner = Learner(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
 q_max_avg = 0
 q_min_avg = 0
