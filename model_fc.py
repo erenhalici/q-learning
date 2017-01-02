@@ -7,7 +7,7 @@ class Model(object):
     x1 = self._x1 = tf.placeholder(tf.float32, [None, num_inputs])
     r  = self._r  = tf.placeholder(tf.float32, [None])
     f  = self._f  = tf.placeholder(tf.float32, [None])
-    a  = self._a  = tf.placeholder(tf.int32, [None, 2])
+    a  = self._a  = tf.placeholder(tf.int32, [None])
 
     weights = []
     last_size = num_inputs
@@ -21,18 +21,19 @@ class Model(object):
 
     self._action = tf.argmax(q0, 1)
 
-    # temp1 = tf.Variable(tf.zeros([batch_size, num_outputs]), trainable=False, validate_shape=False)
-    # temp2 = tf.reshape(tf.scatter_update(tf.reshape(q0, [-1]), a + range(batch_size)*num_outputs, r + f * gamma * tf.reduce_max(q1, axis=1)), [batch_size, num_outputs])
-    # y     = temp1.assign(temp2)
-    # error = tf.reduce_mean(tf.square(q0 - y))
+    temp1 = tf.Variable(tf.zeros([batch_size * num_outputs]), trainable=False, validate_shape=False)
+    q0_flat = temp1.assign(tf.reshape(q0, [-1]))
+    temp2 = tf.Variable(tf.zeros([batch_size * num_outputs]), trainable=False, validate_shape=False)
+    y_flat = temp2.assign(tf.scatter_update(q0_flat, a + range(0, batch_size*num_outputs, 2), r + f * gamma * tf.reduce_max(q1, axis=1)))
+    y = tf.reshape(y_flat, [batch_size, num_outputs])
+    error = tf.reduce_mean(tf.square(q0 - y))
 
-    # error = -x * tf.log(y)
+    # temp1 = tf.Variable(tf.zeros([batch_size]), trainable=False, validate_shape=False)
+    # y = temp1.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
+    # x = tf.gather_nd(q0, a)
+    # error = tf.reduce_mean(tf.square(x - y))
 
-    temp1 = tf.Variable(tf.zeros([batch_size]), trainable=False, validate_shape=False)
-    y = temp1.assign(r + f * gamma * tf.reduce_max(q1, axis=1))
-    x = tf.gather_nd(q0, a)
-    error = tf.reduce_mean(tf.square(x - y))
-    # error = -x * tf.log(y)
+    # error = -tf.reduce_mean(x * tf.log(y))
     self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
 
   def q_value(self, x, weights):

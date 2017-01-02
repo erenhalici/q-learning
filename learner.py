@@ -58,17 +58,15 @@ class Learner(object):
     x1 = []
     f  = []
 
-    count = 0
     for (last_observation, action, reward, observation, done) in experiences:
       x0.append(last_observation)
-      a.append([count, action])
+      a.append(action)
       r.append(reward)
       x1.append(observation)
       if done:
         f.append(0)
       else:
         f.append(1)
-      count += 1
 
     self._sess.run(m.step, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
 
