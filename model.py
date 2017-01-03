@@ -87,10 +87,9 @@ class ModelFC(Model):
     return h
 
 class ModelCNN(Model):
-  def __init__(self, width, height, channels, num_outputs, grayscale=False, resize=True, filter_count=16, layer_count=4, fc_sizes=[128, 128], gamma=0.995, batch_size=64, learning_rate=1e-4):
+  def __init__(self, width, height, channels, num_outputs, grayscale=False, resize=False, filter_count=8, layer_count=2, fc_sizes=[128, 128], gamma=0.995, batch_size=64, learning_rate=1e-4):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, width, height, channels])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, width, height, channels])
-
     r  = self._r  = tf.placeholder(tf.float32, [None])
     f  = self._f  = tf.placeholder(tf.float32, [None])
     a  = self._a  = tf.placeholder(tf.int32, [None])
@@ -100,16 +99,16 @@ class ModelCNN(Model):
     w = width
     h = height
 
-    if grayscale:
-      channels = 1
-      x0 = tf.image.rgb_to_grayscale(x0)
-      x1 = tf.image.rgb_to_grayscale(x1)
+    # if grayscale:
+    #   channels = 1
+    #   x0 = tf.image.rgb_to_grayscale(x0)
+    #   x1 = tf.image.rgb_to_grayscale(x1)
 
-    if resize:
-      w = w/2
-      h = h/2
-      x0 = tf.image.resize_images(x0, [w, h])
-      x1 = tf.image.resize_images(x1, [w, h])
+    # if resize:
+    #   w = w/2
+    #   h = h/2
+    #   x0 = tf.image.resize_images(x0, [w, h])
+    #   x1 = tf.image.resize_images(x1, [w, h])
 
     cnn_weights = []
     last_size = channels
