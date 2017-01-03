@@ -1,6 +1,7 @@
 
 from learner import LearnerFC
 from learner import LearnerCNN
+import os
 import gym
 import numpy as np
 
@@ -31,7 +32,7 @@ elif len(env.observation_space.shape) == 3:
 if flat_input:
   num_inputs  = env.observation_space.shape[0]
 else:
-  width = env.observation_space.shape[0]
+  width  = env.observation_space.shape[0]
   height = env.observation_space.shape[1]
   channels = env.observation_space.shape[2]
 
@@ -42,26 +43,19 @@ if flat_input:
 else:
   learner = LearnerCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
+show = True
+
+os.makedirs('models/' + env_name)
+
 q_max_avg = 0
 q_min_avg = 0
-
 count = 0
 for i_episode in range(total_episodes):
-
-  # if i_episode % 1000 == 0:
-  #   learner.save_model()
+  learner.save_model('models/' + env_name + '/model-'+str(i_episode))
 
   last_observation = observation = env.reset()
 
   total_reward = 0
-
-  if i_episode % 1 == 0:
-    show = True
-  else:
-    show = False
-
-  # if show:
-  #   print("Showing episode no: {} (epsilon: {})".format(i_episode, learner.epsilon))
 
   for t in range(steps_per_episode):
     if show:
