@@ -12,7 +12,7 @@ class Learner(object):
 
     model = self._model
     # return self._sess.run(model.action, feed_dict={model.x0: [observation]})[0]
-    q0 = self._sess.run(model.q0, feed_dict={model.x0: [observation]})[0]
+    q0 = self._sess.run(model.q0, feed_dict={model.x0: [observation], model.keep_prob: 1.0})[0]
     action = np.argmax(q0)
     return action, q0
 
@@ -51,7 +51,7 @@ class Learner(object):
       else:
         f.append(1)
 
-    self._sess.run(m.step, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f})
+    self._sess.run(m.step, feed_dict={m.x0: x0, m.a: a, m.r: r, m.x1: x1, m.f: f, m.keep_prob: self._dropout})
 
     self._epsilon = self._epsilon * self._epsilon_decay
     if self._epsilon < self._min_epsilon:
@@ -70,11 +70,12 @@ class Learner(object):
     self._epsilon = epsilon
 
 class LearnerFC(Learner):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4, dropout=0.5):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
     self._batch_size  = batch_size
     self._learning_rate = learning_rate
+    self._dropout = dropout
 
     self._model = ModelFC(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
@@ -92,13 +93,14 @@ class LearnerFC(Learner):
 
 
 class LearnerCNN(Learner):
-  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4, dropout=0.5):
     self._width  = width
     self._height = height
     self._channels = channels
     self._num_outputs = num_outputs
     self._batch_size  = batch_size
     self._learning_rate = learning_rate
+    self._dropout = dropout
 
     self._model = ModelCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
