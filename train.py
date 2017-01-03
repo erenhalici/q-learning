@@ -1,15 +1,19 @@
 
-from learner import Learner
+from learner import LearnerFC
+from learner import LearnerCNN
 import gym
 import numpy as np
 
 # batch_size = 512
+# total_episodes = 1000
+# steps_per_episode = 1000
+# learning_rate = 1e-3
+# env_name = 'CartPole-v0'
+
 batch_size = 16
 total_episodes = 1000
 steps_per_episode = 1000
 learning_rate = 1e-3
-
-# env_name = 'CartPole-v0'
 env_name = 'Breakout-v0'
 
 learning_count = 5
@@ -19,13 +23,24 @@ env = gym.make(env_name)
 print env.observation_space
 print env.action_space
 
-# num_inputs  = env.observation_space.shape[0]
-width = env.observation_space.shape[0]
-height = env.observation_space.shape[1]
-channels = env.observation_space.shape[2]
+if len(env.observation_space.shape) == 1:
+  flat_input = True
+elif len(env.observation_space.shape) == 3:
+  flat_input = False
+
+if flat_input:
+  num_inputs  = env.observation_space.shape[0]
+else:
+  width = env.observation_space.shape[0]
+  height = env.observation_space.shape[1]
+  channels = env.observation_space.shape[2]
+
 num_outputs = env.action_space.n
 
-learner = Learner(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+if flat_input:
+  learner = LearnerFC(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+else:
+  learner = LearnerCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
 q_max_avg = 0
 q_min_avg = 0

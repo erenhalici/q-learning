@@ -1,35 +1,11 @@
 
-from model_fc  import ModelFC
-from model_cnn import ModelCNN
+from model import ModelFC
+from model import ModelCNN
 import tensorflow as tf
 import numpy as np
 import random
 
 class Learner(object):
-  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9999, learning_rate=1e-4):
-    # self._num_inputs  = num_inputs
-    self._width = width
-    self._height = height
-    self._channels = channels
-    self._num_outputs = num_outputs
-    self._batch_size = batch_size
-    self._learning_rate = learning_rate
-
-    # self._model = ModelFC(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
-    self._model = ModelCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
-
-    self._saver = tf.train.Saver()
-
-    self._sess  = tf.Session()
-    self._sess.run(tf.global_variables_initializer())
-
-    self._experiences = []
-    self._exp_size = exp_size
-
-    self._epsilon = 1.0
-    self._min_epsilon = min_epsilon
-    self._epsilon_decay = epsilon_decay
-
   def action(self, observation, best=False):
     if best==False and random.random() < self._epsilon:
       return random.randrange(self._num_outputs), []
@@ -92,3 +68,48 @@ class Learner(object):
   @epsilon.setter
   def epsilon(self, epsilon):
     self._epsilon = epsilon
+
+class LearnerFC(Learner):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
+    self._num_inputs  = num_inputs
+    self._num_outputs = num_outputs
+    self._batch_size  = batch_size
+    self._learning_rate = learning_rate
+
+    self._model = ModelFC(num_inputs, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+
+    self._saver = tf.train.Saver()
+
+    self._sess  = tf.Session()
+    self._sess.run(tf.global_variables_initializer())
+
+    self._experiences = []
+    self._exp_size = exp_size
+
+    self._epsilon = 1.0
+    self._min_epsilon = min_epsilon
+    self._epsilon_decay = epsilon_decay
+
+
+class LearnerCNN(Learner):
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4):
+    self._width  = width
+    self._height = height
+    self._channels = channels
+    self._num_outputs = num_outputs
+    self._batch_size  = batch_size
+    self._learning_rate = learning_rate
+
+    self._model = ModelCNN(width, height, channels, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+
+    self._saver = tf.train.Saver()
+
+    self._sess  = tf.Session()
+    self._sess.run(tf.global_variables_initializer())
+
+    self._experiences = []
+    self._exp_size = exp_size
+
+    self._epsilon = 1.0
+    self._min_epsilon = min_epsilon
+    self._epsilon_decay = epsilon_decay
