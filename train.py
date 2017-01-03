@@ -5,19 +5,19 @@ import os
 import gym
 import numpy as np
 
-batch_size = 512
-temporal_window_size = 4
-total_episodes = 1000
-steps_per_episode = 1000
-learning_rate = 1e-3
-env_name = 'CartPole-v0'
-
-# batch_size = 16
+# batch_size = 512
 # temporal_window_size = 4
-# total_episodes = 10000
-# steps_per_episode = 100000
+# total_episodes = 1000
+# steps_per_episode = 1000
 # learning_rate = 1e-3
-# env_name = 'Breakout-v0'
+# env_name = 'CartPole-v0'
+
+batch_size = 32
+temporal_window_size = 4
+total_episodes = 10000
+steps_per_episode = 100000
+learning_rate = 1e-3
+env_name = 'Breakout-v0'
 
 learning_count = 5
 
@@ -53,7 +53,7 @@ if flat_input:
 else:
   learner = LearnerCNN(width, height, channels*temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 
-show = True
+show = False
 
 directory = 'models/' + env_name
 if not os.path.exists(directory):
