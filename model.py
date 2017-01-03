@@ -82,7 +82,7 @@ class ModelFC(Model):
     return h
 
 class ModelCNN(Model):
-  def __init__(self, width, height, channels, num_outputs, filter_count=16, layer_count=3, fc_sizes=[128, 128], gamma=0.9, batch_size=64, learning_rate=1e-4):
+  def __init__(self, width, height, channels, num_outputs, grayscale=True, resize=True, filter_count=16, layer_count=3, fc_sizes=[128, 128], gamma=0.9, batch_size=64, learning_rate=1e-4):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, width, height, channels])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, width, height, channels])
 
@@ -92,6 +92,17 @@ class ModelCNN(Model):
 
     w = width
     h = height
+
+    if grayscale:
+      channels = 1
+      x0 = tf.image.rgb_to_grayscale(x0)
+      x1 = tf.image.rgb_to_grayscale(x1)
+
+    if resize:
+      w = w/2
+      h = h/2
+      x0 = tf.image.resize_images(x0, [w, h])
+      x1 = tf.image.resize_images(x1, [w, h])
 
     cnn_weights = []
     last_size = channels

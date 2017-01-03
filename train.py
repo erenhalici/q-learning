@@ -45,13 +45,15 @@ else:
 
 show = True
 
-os.makedirs('models/' + env_name)
+directory = 'models/' + env_name
+if not os.path.exists(directory):
+    os.makedirs(directory)
 
 q_max_avg = 0
 q_min_avg = 0
 count = 0
 for i_episode in range(total_episodes):
-  learner.save_model('models/' + env_name + '/model-'+str(i_episode))
+  learner.save_model(directory + '/model-'+str(i_episode))
 
   last_observation = observation = env.reset()
 
