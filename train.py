@@ -6,6 +6,8 @@ import gym
 import numpy as np
 # from PIL import Image
 
+# load_model = "mimic/model-4548"
+
 show = False
 
 # batch_size = 512
@@ -16,15 +18,24 @@ show = False
 # frame_skip = 1
 # env_name = 'CartPole-v0'
 
-batch_size = 32
-temporal_window_size = 4
+# batch_size = 32
+# temporal_window_size = 4
+# total_episodes = 10000
+# steps_per_episode = 100000
+# learning_rate = 1e-4
+# grayscale = True
+# downsample = True
+# frame_skip = 4
+# env_name = 'Breakout-v0'
+
+batch_size = 512
+temporal_window_size = 1
 total_episodes = 10000
 steps_per_episode = 100000
 learning_rate = 1e-4
-grayscale = True
-downsample = True
-frame_skip = 4
-env_name = 'Breakout-v0'
+frame_skip = 1
+env_name = 'Breakout-ram-v0'
+
 
 learning_count = 5
 
@@ -62,6 +73,7 @@ directory = 'models/' + env_name
 if not os.path.exists(directory):
     os.makedirs(directory)
 
+# learner.load_model(directory + '/' + load_model)
 
 def preprocess_observation(observation):
   if flat_input:
