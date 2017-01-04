@@ -6,7 +6,7 @@ import gym
 import numpy as np
 # from PIL import Image
 
-show = True
+show = False
 
 # batch_size = 512
 # temporal_window_size = 4
