@@ -4,19 +4,27 @@ from learner import LearnerCNN
 import os
 import gym
 import numpy as np
-# from PIL import Image
+from PIL import Image
 
 # load_model = "mimic/model-4548"
 
 show = False
 
 # batch_size = 512
-# temporal_window_size = 4
+# temporal_window_size = 16
 # total_episodes = 1000
-# steps_per_episode = 1000
+# steps_per_episode = 10000
 # learning_rate = 1e-3
 # frame_skip = 1
-# env_name = 'CartPole-v0'
+# env_name = 'Acrobot-v1'
+
+batch_size = 512
+temporal_window_size = 4
+total_episodes = 1000
+steps_per_episode = 1000
+learning_rate = 1e-3
+frame_skip = 1
+env_name = 'CartPole-v0'
 
 # batch_size = 32
 # temporal_window_size = 4
@@ -26,15 +34,16 @@ show = False
 # grayscale = True
 # downsample = True
 # frame_skip = 4
+# dropout = 1.0
 # env_name = 'Breakout-v0'
 
-batch_size = 512
-temporal_window_size = 1
-total_episodes = 10000
-steps_per_episode = 100000
-learning_rate = 1e-4
-frame_skip = 1
-env_name = 'Breakout-ram-v0'
+# batch_size = 512
+# temporal_window_size = 1
+# total_episodes = 10000
+# steps_per_episode = 100000
+# learning_rate = 1e-4
+# frame_skip = 1
+# env_name = 'Breakout-ram-v0'
 
 
 learning_count = 5
@@ -65,9 +74,9 @@ else:
 num_outputs = env.action_space.n
 
 if flat_input:
-  learner = LearnerFC(num_inputs*temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerFC(num_inputs * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 else:
-  learner = LearnerCNN(width, height, channels*temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
 directory = 'models/' + env_name
 if not os.path.exists(directory):
@@ -101,9 +110,9 @@ for i_episode in range(total_episodes):
   learner.save_model(directory + '/model-'+str(i_episode))
 
   # temporal_window = [env.reset()]
-  # while (len(temporal_window) < temporal_window_size):
+  # while (len(temporal_window) < temporal_window_size * frame_skip):
   #   temporal_window.append(env.step(env.action_space.sample())[0])
-  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
+  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size * frame_skip
   done = False
 
   total_reward = 0
@@ -124,12 +133,13 @@ for i_episode in range(total_episodes):
     for i in range(frame_skip):
       if not done:
         ob, r, done, info = env.step(action)
+        temporal_window.append(preprocess_observation(ob))
+        temporal_window.pop(0)
         reward += r
     total_reward += reward
 
-    temporal_window.append(preprocess_observation(ob))
-    temporal_window.pop(0)
     observation = window_to_observation(temporal_window)
+    # Image.fromarray(observation[:,:,0:3]).save('im.png')
 
     if learning_count > 0:
       e = (last_observation, action, reward, observation, done)

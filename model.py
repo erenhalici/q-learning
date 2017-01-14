@@ -1,5 +1,6 @@
 
 import tensorflow as tf
+import math
 
 class Model(object):
   def weight_variable(self, shape):
@@ -10,8 +11,8 @@ class Model(object):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
 
-  def conv2d(self, x, W):
-    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding="SAME")
+  def conv2d(self, x, W, stride=1):
+    return tf.nn.conv2d(x, W, strides=[1, stride, stride, 1], padding="SAME")
 
   @property
   def temp1(self):
@@ -87,7 +88,7 @@ class ModelFC(Model):
     return h
 
 class ModelCNN(Model):
-  def __init__(self, width, height, channels, num_outputs, grayscale=False, resize=False, filter_count=16, layer_count=2, fc_sizes=[128, 128], gamma=0.995, batch_size=64, learning_rate=1e-4):
+  def __init__(self, width, height, channels, num_outputs, gamma=0.995, batch_size=32, learning_rate=1e-4, dropout=0.5):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, width, height, channels])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, width, height, channels])
     r  = self._r  = tf.placeholder(tf.float32, [None])
@@ -99,39 +100,23 @@ class ModelCNN(Model):
     w = width
     h = height
 
-    # if grayscale:
-    #   channels = 1
-    #   x0 = tf.image.rgb_to_grayscale(x0)
-    #   x1 = tf.image.rgb_to_grayscale(x1)
+    WCNN1 = self.weight_variable([8, 8, channels, 16])
+    bCNN1 = self.bias_variable([16])
 
-    # if resize:
-    #   w = w/2
-    #   h = h/2
-    #   x0 = tf.image.resize_images(x0, [w, h])
-    #   x1 = tf.image.resize_images(x1, [w, h])
+    WCNN2 = self.weight_variable([4, 4, 16, 32])
+    bCNN2 = self.bias_variable([32])
 
-    cnn_weights = []
-    last_size = channels
-    size = filter_count
+    fc_size = int(math.ceil(math.ceil(width/4.0)/2.0) * math.ceil(math.ceil(height/4.0)/2.0) * 32.0)
+    WFC1 = self.weight_variable([fc_size, 256])
+    bFC1 = self.weight_variable([256])
 
-    for i in range(layer_count):
-      cnn_weights.append((self.weight_variable([3, 3, last_size, size]), self.bias_variable([size]), self.weight_variable([3, 3, size, size]), self.bias_variable([size])))
-      last_size = size
-      size = size * 2
-      w = w/2
-      h = h/2
+    WFC2 = self.weight_variable([256, num_outputs])
+    bFC2 = self.weight_variable([num_outputs])
 
-    fc_weights = []
+    weights = (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2)
 
-    last_size = fc_shape = w * h * last_size
-
-    for size in fc_sizes:
-      fc_weights.append((self.weight_variable([last_size, size]), self.bias_variable([size])))
-      last_size = size
-    fc_weights.append((self.weight_variable([last_size, num_outputs]), self.bias_variable([num_outputs])))
-
-    q0 = self._q0 = self.q_value(x0, cnn_weights, fc_weights, fc_shape, keep_prob)
-    q1 = self.q_value(x1, cnn_weights, fc_weights, fc_shape, 1)
+    q0 = self._q0 = self.q_value(x0, weights, fc_size, keep_prob)
+    q1 = self.q_value(x1, weights, fc_size, 1)
 
     self._action = tf.argmax(q0, 1)
 
@@ -144,20 +129,13 @@ class ModelCNN(Model):
 
     self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
 
-  def q_value(self, x, cnn_weights, fc_weights, fc_shape, keep_prob):
-    h = x
+  def q_value(self, x, weights, fc_size, keep_prob):
+    (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
 
-    for (W1, b1, W2, b2) in cnn_weights:
-      h1 = tf.nn.relu(self.conv2d(h, W1) + b1)
-      h2 = tf.nn.relu(self.conv2d(h1, W2) + b2)
-      h  = tf.nn.max_pool(h2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID')
+    h1 = tf.nn.relu(self.conv2d(x,  WCNN1, stride=4) + bCNN1)
+    h2 = tf.nn.relu(self.conv2d(h1, WCNN2, stride=2) + bCNN2)
+    h3 = tf.reshape(h2, [-1, fc_size])
+    h4 = tf.nn.relu(tf.matmul(h3, WFC1) + bFC1)
+    h5 = tf.matmul(tf.nn.dropout(h4, keep_prob), WFC2) + bFC2
 
-    h = tf.reshape(h, [-1, fc_shape])
-
-    for (W, b) in fc_weights[:-1]:
-      h = tf.nn.relu(tf.matmul(h, W) + b)
-
-    (W,b) = fc_weights[-1]
-    h = tf.matmul(tf.nn.dropout(h, keep_prob), W) + b
-
-    return h
+    return h5
