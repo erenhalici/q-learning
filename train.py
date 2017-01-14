@@ -18,24 +18,24 @@ show = False
 # frame_skip = 1
 # env_name = 'Acrobot-v1'
 
-batch_size = 512
-temporal_window_size = 4
-total_episodes = 1000
-steps_per_episode = 1000
-learning_rate = 1e-3
-frame_skip = 1
-env_name = 'CartPole-v0'
-
-# batch_size = 32
+# batch_size = 512
 # temporal_window_size = 4
-# total_episodes = 10000
-# steps_per_episode = 100000
-# learning_rate = 1e-4
-# grayscale = True
-# downsample = True
-# frame_skip = 4
-# dropout = 1.0
-# env_name = 'Breakout-v0'
+# total_episodes = 1000
+# steps_per_episode = 1000
+# learning_rate = 1e-3
+# frame_skip = 1
+# env_name = 'CartPole-v0'
+
+batch_size = 32
+temporal_window_size = 4
+total_episodes = 10000
+steps_per_episode = 100000
+learning_rate = 1e-4
+grayscale = True
+downsample = True
+frame_skip = 4
+dropout = 1.0
+env_name = 'Breakout-v0'
 
 # batch_size = 512
 # temporal_window_size = 1
