@@ -29,7 +29,7 @@ train = True
 
 batch_size = 32
 temporal_window_size = 4
-total_episodes = 10000
+total_episodes = 100000
 steps_per_episode = 100000
 learning_rate = 1e-4
 grayscale = True
@@ -75,9 +75,9 @@ else:
 num_outputs = env.action_space.n
 
 if flat_input:
-  learner = LearnerFC(num_inputs * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerFC(num_inputs * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 else:
-  learner = LearnerCNN(width, height, channels * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
+  learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
 if not train:
   learner.epsilon = 0.0
@@ -114,7 +114,7 @@ for i_episode in range(total_episodes):
   if train:
     learner.save_model(directory + '/model-'+str(i_episode))
 
-  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
+  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size * frame_skip
   done = False
 
   total_reward = 0
