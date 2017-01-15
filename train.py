@@ -114,9 +114,6 @@ for i_episode in range(total_episodes):
   if train:
     learner.save_model(directory + '/model-'+str(i_episode))
 
-  # temporal_window = [env.reset()]
-  # while (len(temporal_window) < temporal_window_size * frame_skip):
-  #   temporal_window.append(env.step(env.action_space.sample())[0])
   temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
   done = False
 
@@ -143,12 +140,9 @@ for i_episode in range(total_episodes):
 
       if not done:
         ob, r, done, info = env.step(action)
-
-
-    temporal_window.append(preprocess_observation(ob))
-    temporal_window.pop(0)
-    reward += r
-
+        reward += r
+        temporal_window.append(preprocess_observation(ob))
+        temporal_window.pop(0)
     total_reward += reward
 
     observation = window_to_observation(temporal_window)

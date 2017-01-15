@@ -96,7 +96,7 @@ class LearnerFC(Learner):
 
 
 class LearnerCNN(Learner):
-  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=500000, min_epsilon=0.1, epsilon_decay=0.99999, learning_rate=1e-4, dropout=0.5):
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=250000, min_epsilon=0.1, epsilon_decay=0.999995, learning_rate=1e-4, dropout=0.5):
     self._width  = width
     self._height = height
     self._channels = channels
