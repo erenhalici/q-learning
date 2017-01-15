@@ -6,7 +6,7 @@ import gym
 import numpy as np
 from PIL import Image
 
-load_model = "mimic/model-1601"
+# load_model = "mimic/model-1601"
 show = False
 random = False
 train = True
@@ -75,9 +75,9 @@ else:
 num_outputs = env.action_space.n
 
 if flat_input:
-  learner = LearnerFC(num_inputs * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerFC(num_inputs * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 else:
-  learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
+  learner = LearnerCNN(width, height, channels * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
 if not train:
   learner.epsilon = 0.0
@@ -86,7 +86,7 @@ directory = 'models/' + env_name
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-learner.load_model(directory + '/' + load_model)
+# learner.load_model(directory + '/' + load_model)
 
 def preprocess_observation(observation):
   if flat_input:
@@ -117,7 +117,7 @@ for i_episode in range(total_episodes):
   # temporal_window = [env.reset()]
   # while (len(temporal_window) < temporal_window_size * frame_skip):
   #   temporal_window.append(env.step(env.action_space.sample())[0])
-  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size * frame_skip
+  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
   done = False
 
   total_reward = 0
@@ -143,9 +143,12 @@ for i_episode in range(total_episodes):
 
       if not done:
         ob, r, done, info = env.step(action)
-        temporal_window.append(preprocess_observation(ob))
-        temporal_window.pop(0)
-        reward += r
+
+
+    temporal_window.append(preprocess_observation(ob))
+    temporal_window.pop(0)
+    reward += r
+
     total_reward += reward
 
     observation = window_to_observation(temporal_window)
