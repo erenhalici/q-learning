@@ -6,9 +6,10 @@ import gym
 import numpy as np
 from PIL import Image
 
-# load_model = "mimic/model-4548"
-
+load_model = "mimic/model-1601"
 show = False
+random = False
+train = True
 
 # batch_size = 512
 # temporal_window_size = 16
@@ -78,11 +79,14 @@ if flat_input:
 else:
   learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
+if not train:
+  learner.epsilon = 0.0
+
 directory = 'models/' + env_name
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-# learner.load_model(directory + '/' + load_model)
+learner.load_model(directory + '/' + load_model)
 
 def preprocess_observation(observation):
   if flat_input:
@@ -107,7 +111,8 @@ q_min_avg = 0
 count = 0
 
 for i_episode in range(total_episodes):
-  learner.save_model(directory + '/model-'+str(i_episode))
+  if train:
+    learner.save_model(directory + '/model-'+str(i_episode))
 
   # temporal_window = [env.reset()]
   # while (len(temporal_window) < temporal_window_size * frame_skip):
@@ -117,11 +122,13 @@ for i_episode in range(total_episodes):
 
   total_reward = 0
   for t in range(steps_per_episode):
-    if show:
-      env.render()
-
     last_observation = window_to_observation(temporal_window)
-    action, q = learner.action(last_observation)
+
+    if random:
+      action = env.action_space.sample()
+      q = []
+    else:
+      action, q = learner.action(last_observation)
 
     if len(q) > 0:
       q_max = max(q)
@@ -131,6 +138,9 @@ for i_episode in range(total_episodes):
 
     reward = 0
     for i in range(frame_skip):
+      if show:
+        env.render()
+
       if not done:
         ob, r, done, info = env.step(action)
         temporal_window.append(preprocess_observation(ob))
@@ -141,10 +151,11 @@ for i_episode in range(total_episodes):
     observation = window_to_observation(temporal_window)
     # Image.fromarray(observation[:,:,0:3]).save('im.png')
 
-    if learning_count > 0:
-      e = (last_observation, action, reward, observation, done)
-      learner.add_experience(e)
-      learner.step()
+    if train:
+      if learning_count > 0:
+        e = (last_observation, action, reward, observation, done)
+        learner.add_experience(e)
+        learner.step()
 
     count += 1
 
@@ -157,4 +168,4 @@ for i_episode in range(total_episodes):
       learning_count -= 1
       learner.epsilon = 0
 
-  print("Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.2f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f}".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0))
+  print("Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.2f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f} (exp. size: {7})".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0, learner.experience_size()))

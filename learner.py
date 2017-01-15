@@ -21,6 +21,9 @@ class Learner(object):
     while (len(self._experiences) > self._exp_size):
       self._experiences.pop(0)
 
+  def experience_size(self):
+    return len(self._experiences)
+
   def step_with(self, experiences):
     if (len(experiences) >= self._batch_size):
       self.train_with(random.sample(experiences, self._batch_size))
