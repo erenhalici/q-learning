@@ -6,8 +6,8 @@ import gym
 import numpy as np
 from PIL import Image
 
-# load_model = "mimic/model-1601"
-show = False
+# load_model = "mimic/model-3095"
+show = True
 random = False
 train = True
 

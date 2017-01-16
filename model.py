@@ -88,7 +88,7 @@ class ModelFC(Model):
     return h
 
 class ModelCNN(Model):
-  def __init__(self, width, height, channels, num_outputs, gamma=0.995, batch_size=32, learning_rate=1e-4, dropout=0.5):
+  def __init__(self, width, height, channels, num_outputs, gamma=0.995, batch_size=32, learning_rate=1e-4, dropout=0.5, update_coeff=0.999):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, width, height, channels])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, width, height, channels])
     r  = self._r  = tf.placeholder(tf.float32, [None])
@@ -100,23 +100,32 @@ class ModelCNN(Model):
     w = width
     h = height
 
+    fc_size = int(math.ceil(math.ceil(width/4.0)/2.0) * math.ceil(math.ceil(height/4.0)/2.0) * 32.0)
+
     WCNN1 = self.weight_variable([8, 8, channels, 16])
     bCNN1 = self.bias_variable([16])
-
     WCNN2 = self.weight_variable([4, 4, 16, 32])
     bCNN2 = self.bias_variable([32])
-
-    fc_size = int(math.ceil(math.ceil(width/4.0)/2.0) * math.ceil(math.ceil(height/4.0)/2.0) * 32.0)
     WFC1 = self.weight_variable([fc_size, 256])
     bFC1 = self.weight_variable([256])
-
     WFC2 = self.weight_variable([256, num_outputs])
     bFC2 = self.weight_variable([num_outputs])
 
+    WCNN1_t = self.weight_variable([8, 8, channels, 16])
+    bCNN1_t = self.bias_variable([16])
+    WCNN2_t = self.weight_variable([4, 4, 16, 32])
+    bCNN2_t = self.bias_variable([32])
+    WFC1_t = self.weight_variable([fc_size, 256])
+    bFC1_t = self.weight_variable([256])
+    WFC2_t = self.weight_variable([256, num_outputs])
+    bFC2_t = self.weight_variable([num_outputs])
+
     weights = (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2)
+    weights_t = (WCNN1_t, bCNN1_t, WCNN2_t, bCNN2_t, WFC1_t, bFC1_t, WFC2_t, bFC2_t)
 
     q0 = self._q0 = self.q_value(x0, weights, fc_size, keep_prob)
-    q1 = self.q_value(x1, weights, fc_size, 1)
+    q1 = self.q_value(x1, weights_t, fc_size, 1)
+
 
     self._action = tf.argmax(q0, 1)
 
@@ -127,7 +136,10 @@ class ModelCNN(Model):
     y = tf.reshape(y_flat, [batch_size, num_outputs])
     error = tf.reduce_mean(tf.square(q0 - y))
 
-    self._step = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    update = self.update_target(weights_t, weights, update_coeff)
+
+    self._step = tf.group(optimize, update)
 
   def q_value(self, x, weights, fc_size, keep_prob):
     (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
@@ -139,3 +151,18 @@ class ModelCNN(Model):
     h5 = tf.matmul(tf.nn.dropout(h4, keep_prob), WFC2) + bFC2
 
     return h5
+
+  def update_target(self, weights_t, weights, update_coeff):
+    (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
+    (WCNN1_t, bCNN1_t, WCNN2_t, bCNN2_t, WFC1_t, bFC1_t, WFC2_t, bFC2_t) = weights_t
+
+    WCNN1_u = WCNN1_t.assign(WCNN1_t * update_coeff + WCNN1 * (1 - update_coeff))
+    bCNN1_u = bCNN1_t.assign(bCNN1_t * update_coeff + bCNN1 * (1 - update_coeff))
+    WCNN2_u = WCNN2_t.assign(WCNN2_t * update_coeff + WCNN2 * (1 - update_coeff))
+    bCNN2_u = bCNN2_t.assign(bCNN2_t * update_coeff + bCNN2 * (1 - update_coeff))
+    WFC1_u = WFC1_t.assign(WFC1_t * update_coeff + WFC1 * (1 - update_coeff))
+    bFC1_u = bFC1_t.assign(bFC1_t * update_coeff + bFC1 * (1 - update_coeff))
+    WFC2_u = WFC2_t.assign(WFC2_t * update_coeff + WFC2 * (1 - update_coeff))
+    bFC2_u = bFC2_t.assign(bFC2_t * update_coeff + bFC2 * (1 - update_coeff))
+
+    return tf.group(WCNN1_u, bCNN1_u, WCNN2_u, bCNN2_u, WFC1_u, bFC1_u, WFC2_u, bFC2_u)
