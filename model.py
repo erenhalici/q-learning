@@ -88,7 +88,7 @@ class ModelFC(Model):
     return h
 
 class ModelCNN(Model):
-  def __init__(self, width, height, channels, num_outputs, gamma=0.995, batch_size=32, learning_rate=1e-4, dropout=0.5, update_coeff=0.999):
+  def __init__(self, width, height, channels, num_outputs, gamma=0.99, batch_size=32, learning_rate=1e-4, dropout=0.5, update_coeff=0.999):
     x0 = self._x0 = tf.placeholder(tf.float32, [None, width, height, channels])
     x1 = self._x1 = tf.placeholder(tf.float32, [None, width, height, channels])
     r  = self._r  = tf.placeholder(tf.float32, [None])
