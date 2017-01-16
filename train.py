@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 # load_model = "mimic/model-3095"
-show = True
+show = False
 random = False
 train = True
 
@@ -75,9 +75,9 @@ else:
 num_outputs = env.action_space.n
 
 if flat_input:
-  learner = LearnerFC(num_inputs * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerFC(num_inputs * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 else:
-  learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
+  learner = LearnerCNN(width, height, channels * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
 if not train:
   learner.epsilon = 0.0
@@ -114,7 +114,7 @@ for i_episode in range(total_episodes):
   if train:
     learner.save_model(directory + '/model-'+str(i_episode))
 
-  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size * frame_skip
+  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
   done = False
 
   total_reward = 0
@@ -130,8 +130,8 @@ for i_episode in range(total_episodes):
     if len(q) > 0:
       q_max = max(q)
       q_min = min(q)
-      q_max_avg = 0.999 * q_max_avg + 0.001 * q_max
-      q_min_avg = 0.999 * q_min_avg + 0.001 * q_min
+      q_max_avg = 0.99 * q_max_avg + 0.01 * q_max
+      q_min_avg = 0.99 * q_min_avg + 0.01 * q_min
 
     reward = 0
     for i in range(frame_skip):
