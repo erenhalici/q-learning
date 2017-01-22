@@ -7,6 +7,8 @@ import numpy as np
 from PIL import Image
 
 # load_model = "mimic/model-3095"
+# load_model = "mimic/model-1601"
+# load_model = "mimic/model-10768"
 show = False
 random = False
 train = True
@@ -34,7 +36,7 @@ steps_per_episode = 100000
 learning_rate = 1e-4
 grayscale = True
 downsample = True
-frame_skip = 4
+frame_skip = 1
 dropout = 1.0
 env_name = 'Breakout-v0'
 
