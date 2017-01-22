@@ -59,6 +59,11 @@ class Learner(object):
     self._epsilon = self._epsilon * self._epsilon_decay
     if self._epsilon < self._min_epsilon:
       self._epsilon = self._min_epsilon
+
+    self._step += 1
+    if (self._step % self._target_update_interval == 0):
+      self._seff.run(m.assign_target_network)
+
   def save_model(self, model_file):
     self._saver.save(self._sess, model_file)
 
@@ -73,7 +78,7 @@ class Learner(object):
     self._epsilon = epsilon
 
 class LearnerFC(Learner):
-  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4, dropout=0.5):
+  def __init__(self, num_inputs, num_outputs, batch_size=64, exp_size=1000000, min_epsilon=0.05, epsilon_decay=0.9995, learning_rate=1e-4, dropout=0.5, target_update_interval=10000):
     self._num_inputs  = num_inputs
     self._num_outputs = num_outputs
     self._batch_size  = batch_size
@@ -94,9 +99,13 @@ class LearnerFC(Learner):
     self._min_epsilon = min_epsilon
     self._epsilon_decay = epsilon_decay
 
+    self._target_update_interval = target_update_interval
+
+    self._step = 0
+
 
 class LearnerCNN(Learner):
-  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=100000, min_epsilon=0.1, epsilon_decay=0.999995, learning_rate=1e-4, dropout=0.5):
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=100000, min_epsilon=0.1, epsilon_decay=0.999995, learning_rate=1e-4, dropout=0.5, target_update_interval=10000):
     self._width  = width
     self._height = height
     self._channels = channels
@@ -118,3 +127,8 @@ class LearnerCNN(Learner):
     self._epsilon = 1.0
     self._min_epsilon = min_epsilon
     self._epsilon_decay = epsilon_decay
+
+    self._target_update_interval = target_update_interval
+
+    self._step = 0
+

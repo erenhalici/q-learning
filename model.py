@@ -138,10 +138,10 @@ class ModelCNN(Model):
 
     optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
     update = self.update_target(weights_t, weights, update_coeff)
-    # self._assign_target_network = self.assign_target(weights_t, weights)
+    self._assign_target_network = self.assign_target(weights_t, weights)
 
-    self._step = tf.group(optimize, update)
-    # self._step = optimize
+    # self._step = tf.group(optimize, update)
+    self._step = optimize
 
   def q_value(self, x, weights, fc_size, keep_prob):
     (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
@@ -169,21 +169,21 @@ class ModelCNN(Model):
 
     return tf.group(WCNN1_u, bCNN1_u, WCNN2_u, bCNN2_u, WFC1_u, bFC1_u, WFC2_u, bFC2_u)
 
-  # def assign_target(self, weights_t, weights):
-  #   (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
-  #   (WCNN1_t, bCNN1_t, WCNN2_t, bCNN2_t, WFC1_t, bFC1_t, WFC2_t, bFC2_t) = weights_t
+  def assign_target(self, weights_t, weights):
+    (WCNN1, bCNN1, WCNN2, bCNN2, WFC1, bFC1, WFC2, bFC2) = weights
+    (WCNN1_t, bCNN1_t, WCNN2_t, bCNN2_t, WFC1_t, bFC1_t, WFC2_t, bFC2_t) = weights_t
 
-  #   WCNN1_u = WCNN1_t.assign(WCNN1)
-  #   bCNN1_u = bCNN1_t.assign(bCNN1)
-  #   WCNN2_u = WCNN2_t.assign(WCNN2)
-  #   bCNN2_u = bCNN2_t.assign(bCNN2)
-  #   WFC1_u  = WFC1_t.assign(WFC1)
-  #   bFC1_u  = bFC1_t.assign(bFC1)
-  #   WFC2_u  = WFC2_t.assign(WFC2)
-  #   bFC2_u  = bFC2_t.assign(bFC2)
+    WCNN1_u = WCNN1_t.assign(WCNN1)
+    bCNN1_u = bCNN1_t.assign(bCNN1)
+    WCNN2_u = WCNN2_t.assign(WCNN2)
+    bCNN2_u = bCNN2_t.assign(bCNN2)
+    WFC1_u  = WFC1_t.assign(WFC1)
+    bFC1_u  = bFC1_t.assign(bFC1)
+    WFC2_u  = WFC2_t.assign(WFC2)
+    bFC2_u  = bFC2_t.assign(bFC2)
 
-  #   return tf.group(WCNN1_u, bCNN1_u, WCNN2_u, bCNN2_u, WFC1_u, bFC1_u, WFC2_u, bFC2_u)
+    return tf.group(WCNN1_u, bCNN1_u, WCNN2_u, bCNN2_u, WFC1_u, bFC1_u, WFC2_u, bFC2_u)
 
-  # @property
-  # def assign_target_network(self):
-  #   return self._assign_target_network
+  @property
+  def assign_target_network(self):
+    return self._assign_target_network
