@@ -60,9 +60,9 @@ class Learner(object):
     if self._epsilon < self._min_epsilon:
       self._epsilon = self._min_epsilon
 
-    self._step += 1
     if (self._step % self._target_update_interval == 0):
-      self._seff.run(m.assign_target_network)
+      self._sess.run(m.assign_target_network)
+    self._step += 1
 
   def save_model(self, model_file):
     self._saver.save(self._sess, model_file)
@@ -105,7 +105,7 @@ class LearnerFC(Learner):
 
 
 class LearnerCNN(Learner):
-  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=100000, min_epsilon=0.1, epsilon_decay=0.999995, learning_rate=1e-4, dropout=0.5, target_update_interval=10000):
+  def __init__(self, width, height, channels, num_outputs, batch_size=64, exp_size=250000, min_epsilon=0.1, epsilon_decay=0.999995, learning_rate=1e-4, dropout=0.5, target_update_interval=10000):
     self._width  = width
     self._height = height
     self._channels = channels
