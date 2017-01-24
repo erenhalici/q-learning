@@ -33,10 +33,10 @@ batch_size = 32
 temporal_window_size = 4
 total_episodes = 100000
 steps_per_episode = 100000
-learning_rate = 1e-4
+learning_rate = 1e-3
 grayscale = True
 downsample = True
-frame_skip = 1
+frame_skip = 4
 dropout = 1.0
 env_name = 'Breakout-v0'
 
@@ -48,6 +48,8 @@ env_name = 'Breakout-v0'
 # frame_skip = 1
 # env_name = 'Breakout-ram-v0'
 
+
+out_file = open('buf.txt', 'w')
 
 learning_count = 5
 
@@ -77,9 +79,9 @@ else:
 num_outputs = env.action_space.n
 
 if flat_input:
-  learner = LearnerFC(num_inputs * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
+  learner = LearnerFC(num_inputs * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate)
 else:
-  learner = LearnerCNN(width, height, channels * temporal_window_size * frame_skip, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
+  learner = LearnerCNN(width, height, channels * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
 if not train:
   learner.epsilon = 0.0
@@ -116,7 +118,7 @@ for i_episode in range(total_episodes):
   if train:
     learner.save_model(directory + '/model-'+str(i_episode))
 
-  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size * frame_skip
+  temporal_window = [preprocess_observation(env.reset())] * temporal_window_size
   done = False
 
   total_reward = 0
@@ -167,4 +169,8 @@ for i_episode in range(total_episodes):
       learning_count -= 1
       learner.epsilon = 0
 
-  print("Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.2f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f} (exp. size: {7})".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0, learner.experience_size()))
+  s = "Episode {0:05d} finished after {1:03d} timesteps. Total Reward: {2:03.2f} (epsilon: {3:.2f}, avg. q_max: {4:.2f}, q_min: {5:.2f}) Epoch: {6:.2f} (exp. size: {7})".format(i_episode, t+1, total_reward, learner.epsilon, q_max_avg, q_min_avg, count/50000.0, learner.experience_size())
+  print(s)
+  out_file.write(s + '\n')
+
+out_file.close()
