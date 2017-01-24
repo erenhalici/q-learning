@@ -136,7 +136,8 @@ class ModelCNN(Model):
     y = tf.reshape(y_flat, [batch_size, num_outputs])
     error = tf.reduce_mean(tf.square(q0 - y))
 
-    optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    # optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-4).minimize(error)
+    optimize = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(error)
     update = self.update_target(weights_t, weights, update_coeff)
     self._assign_target_network = self.assign_target(weights_t, weights)
 

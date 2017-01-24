@@ -9,6 +9,8 @@ from PIL import Image
 # load_model = "mimic/model-3095"
 # load_model = "mimic/model-1601"
 # load_model = "mimic/model-10768"
+load_model = "mimic/model-10037"
+
 show = False
 random = False
 train = True
@@ -36,7 +38,7 @@ steps_per_episode = 100000
 learning_rate = 1e-3
 grayscale = True
 downsample = True
-frame_skip = 4
+frame_skip = 1
 dropout = 1.0
 env_name = 'Breakout-v0'
 
@@ -83,14 +85,14 @@ if flat_input:
 else:
   learner = LearnerCNN(width, height, channels * temporal_window_size, num_outputs, batch_size=batch_size, learning_rate=learning_rate, dropout=dropout)
 
-if not train:
-  learner.epsilon = 0.0
-
 directory = 'models/' + env_name
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-# learner.load_model(directory + '/' + load_model)
+
+if not train:
+  learner.epsilon = 0.0
+  learner.load_model(directory + '/' + load_model)
 
 def preprocess_observation(observation):
   if flat_input:
